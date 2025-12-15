@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="https://github.com/Mikkelsej/nix.git"
+REPO_URL="https://github.com/sejder/nix.git"
 CLONE_DIR="$HOME/nix"
 
 # Function to detect NixOS
