@@ -87,8 +87,8 @@ echo "[INFO] Copying hardware-configuration.nix..."
 cp /etc/nixos/hardware-configuration.nix "$CLONE_DIR/hosts/$CHOSEN/hardware-configuration.nix"
 
 echo "[INFO] Running nixos-rebuild switch..."
-sudo nixos-rebuild switch \
-  --extra-experimental-features 'nix-command flakes' \
+sudo NIX_CONFIG="experimental-features = nix-command flakes" \
+  nixos-rebuild switch \
   --flake "$CLONE_DIR#$CHOSEN" \
   --install-bootloader
 
