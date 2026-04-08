@@ -92,5 +92,9 @@ sudo NIX_CONFIG="experimental-features = nix-command flakes" \
   --flake "$CLONE_DIR#$CHOSEN" \
   --install-bootloader
 
+echo "[INFO] Running switch-flake..."
+export NH_FLAKE="$CLONE_DIR"
+switch-flake
+
 echo "[DONE] Rebooting..."
 reboot

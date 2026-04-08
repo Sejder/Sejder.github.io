@@ -115,6 +115,10 @@ nix run nixpkgs#home-manager \
   --extra-experimental-features 'nix-command flakes' \
   -- switch -b backup --flake "$CLONE_DIR#$CHOSEN"
 
+echo "[INFO] Running switch-flake..."
+export NH_FLAKE="$CLONE_DIR"
+switch-flake
+
 # Set default shell to zsh if available
 ZSH_PATH="$HOME/.nix-profile/bin/zsh"
 if [[ -x "$ZSH_PATH" ]]; then
