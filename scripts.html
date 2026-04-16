@@ -12,24 +12,20 @@
   <div id="navbar"></div>
 
   <div class="page-section">
-    <h2>NixOS install (nixos-anywhere)</h2>
-    <p>Run from your local machine. Target must be booted from a NixOS ISO with SSH reachable.</p>
+    <h2>NixOS installh2>
 
-    <h4>1. Scaffold a new host config</h4>
     <p class="script-box">python3 ~/nix/scripts/new-host.py &lt;hostname&gt;</p>
 
-    <h4>2. Install on the target</h4>
     <p class="script-box">nix run github:nix-community/nixos-anywhere -- \
   --flake ~/nix#&lt;hostname&gt; \
   --generate-hardware-config nixos-generate-config \
   root@&lt;target-ip&gt;</p>
 
-    <h4>3. After first boot</h4>
     <p class="script-box">scp root@&lt;ip&gt;:/etc/nixos/hardware-configuration.nix ~/nix/hosts/&lt;hostname&gt;/</p>
 
     <hr>
 
-    <h2>Home-manager (non-NixOS)</h2>
+    <h2>Home-manager</h2>
     <p class="script-box">curl -fsSL https://sejder.github.io/install_scripts/nix.py | python3</p>
   </div>
 </body>
