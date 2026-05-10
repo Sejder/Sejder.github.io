@@ -191,6 +191,9 @@ def select_config(configs: list[str], nix_env: dict[str, str]) -> str:
     with open(flake_path, "w") as f:
         f.write("\n".join(lines) + "\n")
 
+    info("Tracking new files in git for Nix flake visibility...")
+    run(["git", "-C", CLONE_DIR, "add", dest, flake_path])
+
     return new_config
 
 

@@ -3,6 +3,57 @@ set -euo pipefail
 
 REPO_URL="https://github.com/sejder/nix.git"
 CLONE_DIR="$HOME/nix"
+RAW_BASE="https://raw.githubusercontent.com/Sejder/nix/main"
+
+# Disko configs: label and path within the nix repo
+DISKO_LABELS=("LUKS encrypted ext4 on /dev/nvme0n1  (GPT, 1G EF00 boot + full disk LUKS root)")
+DISKO_PATHS=("disko/luks-nvme.nix")
+
+# ---------------------------------------------------------------------------
+# Disko partitioning (optional)
+# ---------------------------------------------------------------------------
+
+maybe_partition() {
+  read -rp "Partition this disk with disko before installing? [y/N] " answer
+  case "$answer" in
+    [yY]|[yY][eE][sS]) ;;
+    *) echo "[INFO] Skipping partitioning."; return ;;
+  esac
+
+  echo ""
+  echo "Available disko configs:"
+  for i in "${!DISKO_LABELS[@]}"; do
+    echo "  $((i+1))) ${DISKO_LABELS[$i]}"
+  done
+
+  local idx=0
+  while true; do
+    read -rp "Enter number: " raw
+    if [[ "$raw" =~ ^[0-9]+$ ]] && (( raw >= 1 && raw <= ${#DISKO_LABELS[@]} )); then
+      idx=$((raw - 1))
+      break
+    fi
+    echo "  Invalid selection, try again."
+  done
+
+  local url="$RAW_BASE/${DISKO_PATHS[$idx]}"
+  echo "[INFO] Downloading disko config from $url ..."
+  local tmp
+  tmp=$(mktemp --suffix=.nix)
+  curl -fsSL "$url" -o "$tmp"
+
+  echo "[INFO] Running disko (this will ERASE the target disk) ..."
+  nix run github:nix-community/disko \
+    --extra-experimental-features 'nix-command flakes' \
+    -- --mode disko "$tmp"
+
+  rm -f "$tmp"
+  echo "[INFO] Partitioning complete."
+}
+
+# ---------------------------------------------------------------------------
+# Guards
+# ---------------------------------------------------------------------------
 
 # Guard: must be NixOS
 if ! [[ -f /etc/os-release ]] || ! grep -q '^ID=nixos' /etc/os-release; then
@@ -16,6 +67,8 @@ if [[ -d "$CLONE_DIR" ]]; then
   echo "  sudo nixos-rebuild switch --flake \"$CLONE_DIR#<hostname>\" --install-bootloader"
   exit 1
 fi
+
+maybe_partition
 
 echo "[INFO] Installing git temporarily..."
 nix-env -iA nixos.git
@@ -75,7 +128,7 @@ if [[ "$CHOICE" == "Create new" ]]; then
   cp -r "$CLONE_DIR/hosts/$BASE" "$CLONE_DIR/hosts/$NEW_HOST"
 
   echo "[INFO] Adding $NEW_HOST to flake.nix..."
-  sed -i "s|\(nixosConfigurations = {\)|\1\n        $NEW_HOST = mkHost \"$NEW_HOST\";|" "$CLONE_DIR/flake.nix"
+  sed -i "s|\(nixosConfigurations = {\)|\1\n        $NEW_HOST = mkHost \"$NEW_HOST\" [];|" "$CLONE_DIR/flake.nix"
 
   echo "[INFO] Remember to update networking.hostName in hosts/$NEW_HOST/configuration.nix before rebooting."
   CHOSEN="$NEW_HOST"
